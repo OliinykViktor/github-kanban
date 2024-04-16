@@ -27,20 +27,25 @@ const HeaderInput: React.FC = () => {
       const issuesUrl = generateIssuesUrl(input);
       const aboutUrl = generateAboutUrl(input);
 
-      const res = await Promise.all([fetch(issuesUrl), fetch(aboutUrl)]);
-      const data = await Promise.all(res.map((r) => r.json()));
-      console.log(data);
+      const [issuesRes, aboutRes] = await Promise.all([
+        fetch(issuesUrl),
+        fetch(aboutUrl)
+      ]);
+      const [issuesData, aboutData] = await Promise.all([
+        issuesRes.json(), 
+        aboutRes.json()
+      ]);
 
-      if (sessionStorage.getItem(data[1].html_url)) {
+      if (sessionStorage.getItem(aboutData.html_url)) {
         dispatch(
           loadIssues(
-            JSON.parse(sessionStorage.getItem(data[1].html_url)!)
+            JSON.parse(sessionStorage.getItem(aboutData.html_url)!)
           )
         );
       } else {
-        dispatch(loadIssues(data[0]));
+        dispatch(loadIssues(issuesData));
       }
-      dispatch(loadRepoInfo(data[1]));
+      dispatch(loadRepoInfo(aboutData));
       setInput("");
     } catch (error) {
       setErrorMsg("It seems that something went wrong.");

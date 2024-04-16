@@ -28,7 +28,7 @@ interface Issue {
 }
 
 interface RepoInfo {
-  id: number;
+  id: number | null;
   html_url: string;
   message?: string;
 }
@@ -55,7 +55,7 @@ const TodoList: React.FC = () => {
       { name: "Done", items: [...doneIssues] },
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [allIssues]);
 
   const [currentBoard, setCurrentBoard] = useState<{ name: string; items: Issue[] } | null>(null);
   const [currentItem, setCurrentItem] = useState<Issue | null>(null);
