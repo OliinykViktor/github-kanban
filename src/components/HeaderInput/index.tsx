@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { 
+import {
   Button,
-  Form
+  Form,
+  OverlayTrigger,
+  Tooltip
 } from "react-bootstrap";
 
 import { issuesSlice } from "../../redux/slices/issuesSlice";
-import { 
+import {
   generateAboutUrl,
   generateIssuesUrl
 } from "../../helpers";
+import InfoBlock from "../InfoBlock";
 
-const HeaderInput = () => {
+const HeaderInput: React.FC = () => {
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+
   const dispatch = useDispatch();
   const { loadIssues, loadRepoInfo } = issuesSlice.actions;
-
-  const [input, setInput] = useState("");
 
   async function loadFromApi(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,6 +29,7 @@ const HeaderInput = () => {
 
       const res = await Promise.all([fetch(issuesUrl), fetch(aboutUrl)]);
       const data = await Promise.all(res.map((r) => r.json()));
+      console.log(data);
 
       if (sessionStorage.getItem(data[1].html_url)) {
         dispatch(
@@ -38,31 +43,53 @@ const HeaderInput = () => {
       dispatch(loadRepoInfo(data[1]));
       setInput("");
     } catch (error) {
-      console.error(error);
+      setErrorMsg("It seems that something went wrong.");
+      setTimeout(() => {
+        setErrorMsg(null)
+      }, 3000)
     }
   }
 
   return (
-    <form
-      className="d-flex"
-      onSubmit={(e) => loadFromApi(e)}
-    >
-      <Form.Control
-        size="sm"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        type="text"
-        placeholder="Enter repo url"
-      />
-      <Button
-        variant="secondary"
-        className="ms-1 text-nowrap"
-        type="submit"
-        size="sm"
+    <>
+      <form
+        className="d-flex"
+        onSubmit={(e) => loadFromApi(e)}
       >
-        Load issues
-      </Button>
-    </form>
+        <OverlayTrigger
+          placement="bottom"
+          overlay={
+            <Tooltip 
+              id="tooltip"
+              className="position-absolute"
+            >
+              The primary request limit for unauthenticated users is 60 requests per hour
+            </Tooltip>
+          }
+        >
+          <Form.Control
+            size="sm"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            type="text"
+            placeholder="Enter repo url"
+          />
+        </OverlayTrigger>
+        <Button
+          variant="secondary"
+          className="ms-1 text-nowrap"
+          type="submit"
+          size="sm"
+        >
+          Load issues
+        </Button>
+      </form>
+      <InfoBlock
+        isHidden={!errorMsg}
+        msg={errorMsg}
+        variant="danger"
+      />
+    </>
   );
 }
 

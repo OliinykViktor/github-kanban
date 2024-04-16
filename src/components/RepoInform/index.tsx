@@ -1,8 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { NavLink } from "react-bootstrap";
 
 import { RootState } from "../../redux/rootStore";
-import { NavLink } from "react-bootstrap";
 
 interface RepoInfo {
   id: number;
